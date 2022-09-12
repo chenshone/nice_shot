@@ -1,0 +1,32 @@
+.py_game_menu {
+    width: 100%;
+    height: 100%;
+    background-image: url("/static/image/menu/bg.jpeg");
+    background-size: 100% 100%;
+    user-select: none;
+}
+
+.py_game_menu_filed {
+    width: 20vw;
+    position: relative;
+    top: 30vh;
+    left: 40vw;
+}
+
+.py_game_menu_filed_item {
+    color: white;
+    width: 18vw;
+    height: 7vh;
+    font-size: 6vh;
+    font-style: italic;
+    padding: 2vh;
+    cursor: pointer;
+    text-align: center;
+    background-color: rgba(39, 21, 28, 0.6);
+    border-radius: 10px;
+    letter-spacing: 0.5vw;
+}
+
+.py_game_menu_filed_item:hover {
+    transform: scale(1.2);
+}
