@@ -30,3 +30,9 @@
 .py_game_menu_filed_item:hover {
     transform: scale(1.2);
 }
+
+.py_game_playground {
+    width: 100%;
+    height: 100%;
+    user-select: none;
+}

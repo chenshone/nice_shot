@@ -3,11 +3,18 @@ class PyGamePlayground {
         this.root = root
         this.$playground = $(`
         <div class="py_game_playground">
-            游戏界面
         </div>
         `)
-        this.hide()
+        // this.hide()
         this.root.$py_game.append(this.$playground)
+
+        this.width = this.$playground.width()
+        this.height = this.$playground.height()
+
+        this.gameMap = new GameMap(this)
+        this.players = []
+        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.2, true))
+
 
         this.start()
     }
