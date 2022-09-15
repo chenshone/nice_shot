@@ -15,18 +15,22 @@ class PyGamePlayground {
         this.players = []
         this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.2, true))
 
+        for (let i = 0; i < 5; i++) {
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.getRandomColor(), this.height * 0.2, false))
+
+        }
 
         this.start()
     }
 
+    getRandomColor() {
+        let color = ['#eccc68', '#ff6b81', '#70a1ff', '#7bed9f']
+        return color[Math.floor(color.length * Math.random())]
+    }
+
     start() {
-        this.add_listening_events()
     }
 
-    add_listening_events() {
-        let outer = this
-
-    }
 
     show() {
         this.$playground.show()
