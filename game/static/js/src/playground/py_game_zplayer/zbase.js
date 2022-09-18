@@ -34,11 +34,12 @@ class Player extends PyGameObject {
             return false
         })
         this.playground.gameMap.$canvas.on("mousedown", function (e) {
+            const rect = outer.ctx.canvas.getBoundingClientRect()
             if (e.which === 3) { // 鼠标右键
-                outer.move2position(e.clientX, e.clientY)
+                outer.move2position(e.clientX - rect.left, e.clientY - rect.top)
             } else if (e.which === 1) { // 鼠标左键
                 if (outer.curSkill === 'fireball') {
-                    outer.shootFireball(e.clientX, e.clientY)
+                    outer.shootFireball(e.clientX - rect.left, e.clientY - rect.top)
                 }
 
                 outer.curSkill = null

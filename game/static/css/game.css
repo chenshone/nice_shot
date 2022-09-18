@@ -9,17 +9,16 @@
 .py_game_menu_filed {
     width: 20vw;
     position: relative;
-    top: 30vh;
-    left: 40vw;
+    top: 40%;
+    left: 40%;
 }
 
 .py_game_menu_filed_item {
     color: white;
     width: 18vw;
-    height: 7vh;
-    font-size: 6vh;
+    height: 6vh;
+    font-size: 4vh;
     font-style: italic;
-    padding: 2vh;
     cursor: pointer;
     text-align: center;
     background-color: rgba(39, 21, 28, 0.6);
