@@ -35,3 +35,97 @@
     height: 100%;
     user-select: none;
 }
+
+.py_game_settings {
+    width: 100%;
+    height: 100%;
+    background-image: url("/static/image/menu/bg.jpeg");
+    background-size: 100% 100%;
+    user-select: none;
+}
+
+.py_game_settings_login {
+    height: 41vh;
+    width: 20vw;
+    position: relative;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+}
+
+.py_game_settings_register {
+    height: 49vh;
+    width: 20vw;
+    position: relative;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+}
+
+.py_game_settings_title {
+    color: white;
+    font-size: 3vh;
+    text-align: center;
+    padding-top: 2vh;
+    margin-bottom: 2vh;
+}
+
+.py_game_settings_username {
+    display: block;
+    height: 7vh;
+}
+
+.py_game_settings_password {
+    display: block;
+    height: 7vh;
+}
+
+.py_game_settings_submit {
+    display: block;
+    height: 7vh;
+}
+
+.py_game_settings_item {
+    width: 100%;
+    height: 100%;
+}
+
+.py_game_settings_item > input {
+    width: 90%;
+    line-height: 3vh;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.py_game_settings_item > button {
+    width: 90%;
+    line-height: 3vh;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #108b96;
+}
+
+.py_game_settings_error_message {
+    color: red;
+    font-size: 1vh;
+    display: inline;
+    float: left;
+    padding-left: 1vw;
+}
+
+.py_game_settings_option {
+    color: white;
+    font-size: 1.5vh;
+    display: inline;
+    float: right;
+    padding-right: 1vw;
+    cursor: pointer;
+}
