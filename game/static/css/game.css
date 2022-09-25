@@ -34,6 +34,14 @@
     width: 100%;
     height: 100%;
     user-select: none;
+    background-color: gray;
+}
+
+.py_game_playground > canvas {
+    position: relative;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .py_game_settings {

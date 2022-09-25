@@ -5,6 +5,7 @@ class PyGamePlayground {
         <div class="py_game_playground">
         </div>
         `)
+        this.root.$py_game.append(this.$playground)
         this.hide()
 
         this.start()
@@ -16,23 +17,34 @@ class PyGamePlayground {
     }
 
     start() {
+        let outer = this
+        $(window).resize(function () {
+            outer.resize()
+        })
+    }
+
+    // 长宽比 16:9
+    resize() {
+        this.width = this.$playground.width()
+        this.height = this.$playground.height()
+        let unit = Math.min(this.width / 16, this.height / 9)
+        this.width = unit * 16
+        this.height = unit * 9
+        this.scale = this.height  // 基准
+
+        if (this.gameMap) this.gameMap.resize()
     }
 
 
     show() {
         this.$playground.show()
-        this.root.$py_game.append(this.$playground)
-
-        this.width = this.$playground.width()
-        this.height = this.$playground.height()
-
+        this.resize()
         this.gameMap = new GameMap(this)
         this.players = []
-        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.2, true))
+        this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, "white", this.height * 0.2 / this.scale, true))
 
         for (let i = 0; i < 5; i++) {
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.getRandomColor(), this.height * 0.2, false))
-
+            this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, this.getRandomColor(), this.height * 0.2 / this.scale, false))
         }
 
     }

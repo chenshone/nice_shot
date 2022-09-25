@@ -12,7 +12,7 @@ class Player extends PyGameObject {
         this.color = color
         this.speed = speed
         this.isMe = isMe
-        this.eps = 0.1 // 精度
+        this.eps = 0.01 // 精度
         // 收到伤害后会被弹出一段距离（此阶段失去控制）
         this.damageX = 0 //方向
         this.damageY = 0
@@ -41,10 +41,10 @@ class Player extends PyGameObject {
         this.playground.gameMap.$canvas.on("mousedown", function (e) {
             const rect = outer.ctx.canvas.getBoundingClientRect()
             if (e.which === 3) { // 鼠标右键
-                outer.move2position(e.clientX - rect.left, e.clientY - rect.top)
+                outer.move2position((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale)
             } else if (e.which === 1) { // 鼠标左键
                 if (outer.curSkill === 'fireball') {
-                    outer.shootFireball(e.clientX - rect.left, e.clientY - rect.top)
+                    outer.shootFireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale)
                 }
 
                 outer.curSkill = null
@@ -61,14 +61,14 @@ class Player extends PyGameObject {
 
     shootFireball(tx, ty) {
         let x = this.x, y = this.y
-        let radius = this.playground.height * 0.01
+        let radius = this.playground.height * 0.01 / this.playground.scale
         let angle = Math.atan2(ty - y, tx - x)
         let vx = Math.cos(angle)
         let vy = Math.sin(angle)
         let color = "orange"
-        let speed = this.playground.height * 0.5
-        let moveLength = this.playground.height * 1
-        let damage = this.playground.height * 0.01
+        let speed = this.playground.height * 0.5 / this.playground.scale
+        let moveLength = this.playground.height * 1 / this.playground.scale
+        let damage = this.playground.height * 0.01 / this.playground.scale
         new FireBall(this.playground, this, x, y, radius, vx, vy, speed, color, moveLength, damage)
     }
 
@@ -99,7 +99,7 @@ class Player extends PyGameObject {
             new Particle(this.playground, x, y, radius, vx, vy, speed, color, moveLength)
         }
 
-        if (this.radius < 10) { // 半径小于10px就认为die
+        if (this.radius < this.eps) {
             this.destroy()
             return false
         }
@@ -111,6 +111,11 @@ class Player extends PyGameObject {
     }
 
     update() {
+        this.updateMove()
+        this.render()
+    }
+
+    updateMove() {
         this.spendTime += this.timedelta
         if (!this.isMe && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
             let player = null
@@ -128,7 +133,7 @@ class Player extends PyGameObject {
         }
 
         //如果收到攻击，会被弹开，该段时间内，玩家无法操控
-        if (this.damageSpeed > 10) {
+        if (this.damageSpeed > this.eps) {
             this.vx = this.vy = 0
             this.moveLength = 0
             this.x += this.damageX * this.damageSpeed * this.timedelta / 1000
@@ -139,8 +144,8 @@ class Player extends PyGameObject {
                 this.moveLength = 0
                 this.vx = this.vy = 0
                 if (!this.isMe) {
-                    let tx = Math.random() * this.playground.width
-                    let ty = Math.random() * this.playground.height
+                    let tx = Math.random() * this.playground.width / this.playground.scale
+                    let ty = Math.random() * this.playground.height / this.playground.scale
                     this.move2position(tx, ty)
                 }
             } else {
@@ -150,21 +155,21 @@ class Player extends PyGameObject {
                 this.moveLength -= moveD
             }
         }
-        this.render()
     }
 
     render() {
+        let scale = this.playground.scale
         if (this.isMe) {
             this.ctx.save();
             this.ctx.beginPath();
-            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
             this.ctx.stroke();
             this.ctx.clip();
-            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale);
             this.ctx.restore();
         } else {
             this.ctx.beginPath()
-            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false)
             this.ctx.fillStyle = this.color
             this.ctx.fill()
         }
