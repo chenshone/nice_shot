@@ -1,6 +1,7 @@
 class Player extends PyGameObject {
-    constructor(playground, x, y, radius, color, speed, isMe) {
-        super();
+    constructor(playground, x, y, radius, color, speed, character, username, photo) {
+        super()
+        console.log(character, username, photo)
         this.playground = playground
         this.ctx = playground.gameMap.ctx
         this.x = x
@@ -11,7 +12,9 @@ class Player extends PyGameObject {
         this.radius = radius
         this.color = color
         this.speed = speed
-        this.isMe = isMe
+        this.character = character
+        this.username = username
+        this.photo = photo
         this.eps = 0.01 // 精度
         // 收到伤害后会被弹出一段距离（此阶段失去控制）
         this.damageX = 0 //方向
@@ -21,14 +24,14 @@ class Player extends PyGameObject {
         this.curSkill = null
         this.spendTime = 0 // 前5s不能攻击
 
-        if (isMe) {
+        if (character !== "robot") {
             this.img = new Image()
-            this.img.src = this.playground.root.settings.photo
+            this.img.src = this.photo
         }
     }
 
     start() {
-        if (this.isMe) {
+        if (this.character === "me") {
             this.addListeningEvents()
         }
     }
@@ -117,7 +120,7 @@ class Player extends PyGameObject {
 
     updateMove() {
         this.spendTime += this.timedelta
-        if (!this.isMe && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
+        if (this.character === "robot" && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
             let player = null
             for (let i = 0; i < 1000; i++) {
                 player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)]
@@ -143,7 +146,7 @@ class Player extends PyGameObject {
             if (this.moveLength < this.eps) {
                 this.moveLength = 0
                 this.vx = this.vy = 0
-                if (!this.isMe) {
+                if (this.character === "robot") {
                     let tx = Math.random() * this.playground.width / this.playground.scale
                     let ty = Math.random() * this.playground.height / this.playground.scale
                     this.move2position(tx, ty)
@@ -159,7 +162,7 @@ class Player extends PyGameObject {
 
     render() {
         let scale = this.playground.scale
-        if (this.isMe) {
+        if (this.character !== "robot") {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);

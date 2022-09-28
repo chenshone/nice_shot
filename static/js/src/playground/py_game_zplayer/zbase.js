@@ -23,7 +23,7 @@ class Player extends PyGameObject {
     }
 
     start() {
-        if (this.isMe) {
+        if (this.character) {
             this.addListeningEvents()
         }
     }
@@ -106,7 +106,7 @@ class Player extends PyGameObject {
 
     update() {
         this.spendTime += this.timedelta
-        if (!this.isMe && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
+        if (!this.character && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
             let player = null
             for (let i = 0; i < 1000; i++) {
                 player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)]
@@ -132,7 +132,7 @@ class Player extends PyGameObject {
             if (this.moveLength < this.eps) {
                 this.moveLength = 0
                 this.vx = this.vy = 0
-                if (!this.isMe) {
+                if (!this.character) {
                     let tx = Math.random() * this.playground.width
                     let ty = Math.random() * this.playground.height
                     this.move2position(tx, ty)

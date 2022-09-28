@@ -1,6 +1,7 @@
 class PyGamePlayground {
     constructor(root) {
         this.root = root
+        this.mps = null
         this.$playground = $(`
         <div class="py_game_playground">
         </div>
@@ -36,15 +37,24 @@ class PyGamePlayground {
     }
 
 
-    show() {
+    show(mode) {
+        let outer = this
         this.$playground.show()
         this.resize()
         this.gameMap = new GameMap(this)
         this.players = []
-        this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, "white", this.height * 0.2 / this.scale, true))
+        this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, "white", this.height * 0.2 / this.scale, "me", this.root.settings.username, this.root.settings.photo))
 
-        for (let i = 0; i < 5; i++) {
-            this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, this.getRandomColor(), this.height * 0.2 / this.scale, false))
+        if (mode === "single mode") {
+            for (let i = 0; i < 5; i++) {
+                this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, this.getRandomColor(), this.height * 0.2 / this.scale, "robot"))
+            }
+        } else if (mode === "multi mode") {
+            this.mps = new MultiPlayerSocket(this)
+            this.mps.uuid = this.players[0].uuid // 每个玩家的ws的uuid等于玩家的uuid，这样可以指明当前的ws是谁
+            this.mps.ws.onopen = function () {
+                outer.mps.sendCreatePlayer(outer.root.settings.username, outer.root.settings.photo)
+            }
         }
 
     }

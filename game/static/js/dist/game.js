@@ -52,6 +52,7 @@ class PyGameMenu {
         this.$menu.hide()
     }
 }
+
 let py_game_objects = []
 
 class PyGameObject {
@@ -100,6 +101,7 @@ let py_game_animation = function (timestamp) {
 }
 
 requestAnimationFrame(py_game_animation)
+
 class GameMap extends PyGameObject {
     constructor(playground) {
         super();
@@ -127,6 +129,7 @@ class GameMap extends PyGameObject {
     }
 
 }
+
 class Particle extends PyGameObject {
     constructor(playground, x, y, radius, vx, vy, speed, color, moveLength) {
         super();
@@ -166,7 +169,9 @@ class Particle extends PyGameObject {
         this.ctx.fillStyle = this.color
         this.ctx.fill()
     }
-}class Player extends PyGameObject {
+}
+
+class Player extends PyGameObject {
     constructor(playground, x, y, radius, color, speed, isMe) {
         super();
         this.playground = playground
@@ -191,7 +196,7 @@ class Particle extends PyGameObject {
     }
 
     start() {
-        if (this.isMe) {
+        if (this.character) {
             this.addListeningEvents()
         }
     }
@@ -274,7 +279,7 @@ class Particle extends PyGameObject {
 
     update() {
         this.spendTime += this.timedelta
-        if (!this.isMe && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
+        if (!this.character && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
             let player = null
             for (let i = 0; i < 1000; i++) {
                 player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)]
@@ -300,7 +305,7 @@ class Particle extends PyGameObject {
             if (this.moveLength < this.eps) {
                 this.moveLength = 0
                 this.vx = this.vy = 0
-                if (!this.isMe) {
+                if (!this.character) {
                     let tx = Math.random() * this.playground.width
                     let ty = Math.random() * this.playground.height
                     this.move2position(tx, ty)
@@ -330,7 +335,9 @@ class Particle extends PyGameObject {
             }
         }
     }
-}class FireBall extends PyGameObject {
+}
+
+class FireBall extends PyGameObject {
     constructor(playground, player, x, y, radius, vx, vy, speed, color, moveLength, damage) {
         super();
         this.playground = playground
@@ -395,7 +402,9 @@ class Particle extends PyGameObject {
         this.ctx.fillStyle = this.color
         this.ctx.fill()
     }
-}class PyGamePlayground {
+}
+
+class PyGamePlayground {
     constructor(root) {
         this.root = root
         this.$playground = $(`
@@ -437,6 +446,7 @@ class Particle extends PyGameObject {
         this.$playground.hide()
     }
 }
+
 export class PyGame {
     constructor(id) {
         this.id = id

@@ -5,6 +5,16 @@ class PyGameObject {
         py_game_objects.push(this)
         this.hasCalledStart = false;
         this.timedelta = 0 // 当前帧距离上一帧的时间间隔
+        this.uuid = this.createUuid()
+    }
+
+    createUuid() {
+        let res = ""
+        for (let i = 0; i < 8; i++) {
+            let x = Math.floor(Math.random() * 10).toString()
+            res += x
+        }
+        return res
     }
 
     start() { // 只会在第一帧执行一次
