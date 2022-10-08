@@ -40,8 +40,12 @@ class PyGamePlayground {
     show(mode) {
         let outer = this
         this.$playground.show()
+        this.mode = mode;
+        this.state = 'waiting' // waiting fighting over
         this.resize()
         this.gameMap = new GameMap(this)
+        this.noticeBoard = new NoticeBoard(this)
+        this.playerCount = 0
         this.players = []
         this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, "white", this.height * 0.2 / this.scale, "me", this.root.settings.username, this.root.settings.photo))
 

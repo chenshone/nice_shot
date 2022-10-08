@@ -1,7 +1,6 @@
 class Player extends PyGameObject {
     constructor(playground, x, y, radius, color, speed, character, username, photo) {
         super()
-        console.log(character, username, photo)
         this.playground = playground
         this.ctx = playground.gameMap.ctx
         this.x = x
@@ -23,14 +22,31 @@ class Player extends PyGameObject {
         this.friction = 0.9 // 摩擦力
         this.curSkill = null
         this.spendTime = 0 // 前5s不能攻击
+        this.fireballs = []
 
         if (character !== "robot") {
             this.img = new Image()
             this.img.src = this.photo
         }
+
+        if (character === 'me') {
+            this.fireballColdtime = 3 // 冷却时间 秒
+            this.fireBallImg = new Image()
+            this.fireBallImg.src = 'https://cdn.jsdelivr.net/gh/chenshone/myPictureHost@main/learning-notes/20221008141348.png'
+
+            this.blinkColdtime = 5 // 闪现冷却时间 秒
+            this.blinkImg = new Image()
+            this.blinkImg.src = 'https://cdn.jsdelivr.net/gh/chenshone/myPictureHost@main/learning-notes/20221008141411.png'
+        }
     }
 
     start() {
+        this.playground.playerCount++
+        this.playground.noticeBoard.write(`已就绪: ${this.playground.playerCount}人`)
+        if (this.playground.playerCount >= 3) {
+            this.playground.state = 'fighting'
+            this.playground.noticeBoard.write("fighting")
+        }
         if (this.character === "me") {
             this.addListeningEvents()
         }
@@ -42,12 +58,29 @@ class Player extends PyGameObject {
             return false
         })
         this.playground.gameMap.$canvas.on("mousedown", function (e) {
+            if (outer.playground.state !== 'fighting') return true
+
             const rect = outer.ctx.canvas.getBoundingClientRect()
             if (e.which === 3) { // 鼠标右键
-                outer.move2position((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale)
+                let tx = (e.clientX - rect.left) / outer.playground.scale
+                let ty = (e.clientY - rect.top) / outer.playground.scale
+                outer.move2position(tx, ty)
+                if (outer.playground.mode === 'multi mode')
+                    outer.playground.mps.sendMoveTo(tx, ty)
             } else if (e.which === 1) { // 鼠标左键
+                let tx = (e.clientX - rect.left) / outer.playground.scale
+                let ty = (e.clientY - rect.top) / outer.playground.scale
                 if (outer.curSkill === 'fireball') {
-                    outer.shootFireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale)
+                    if (outer.fireballColdtime > outer.eps) return false
+                    let fireball = outer.shootFireball(tx, ty)
+                    if (outer.playground.mode === 'multi mode')
+                        outer.playground.mps.sendShootFireball(tx, ty, fireball.uuid)
+                } else if (outer.curSkill === 'blink') {
+                    if (outer.blinkColdtime > outer.eps) return false
+                    outer.blink(tx, ty)
+                    if (outer.playground.mode === 'multi mode') {
+                        outer.playground.mps.sendBlink(tx, ty)
+                    }
                 }
 
                 outer.curSkill = null
@@ -55,8 +88,16 @@ class Player extends PyGameObject {
         })
 
         $(window).keydown(function (e) {
+            if (outer.playground.state !== 'fighting') return true
+
+
             if (e.which === 81) { // q键
+                if (outer.fireballColdtime > outer.eps) return false
                 outer.curSkill = 'fireball'
+                return false
+            } else if (e.which === 70) { // f键
+                if (outer.blinkColdtime > outer.eps) return false
+                outer.curSkill = 'blink'
                 return false
             }
         })
@@ -72,7 +113,34 @@ class Player extends PyGameObject {
         let speed = this.playground.height * 0.5 / this.playground.scale
         let moveLength = this.playground.height * 1 / this.playground.scale
         let damage = this.playground.height * 0.01 / this.playground.scale
-        new FireBall(this.playground, this, x, y, radius, vx, vy, speed, color, moveLength, damage)
+        let fireball = new FireBall(this.playground, this, x, y, radius, vx, vy, speed, color, moveLength, damage)
+        this.fireballs.push(fireball)
+
+        this.fireballColdtime = 3
+        return fireball
+    }
+
+    destroyFireball(ball_uuid) {
+        for (let i = 0; i < this.fireballs.length; i++) {
+            let fireball = this.fireballs[i];
+            if (fireball.uuid === ball_uuid) {
+                fireball.destroy()
+                break
+            }
+        }
+    }
+
+    blink(tx, ty) {
+        let x = this.x, y = this.y
+        let d = this.getDist(x, y, tx, ty)
+        d = Math.min(d, 0.8)
+        let angle = Math.atan2(ty - y, tx - x)
+        let vx = Math.cos(angle)
+        let vy = Math.sin(angle)
+        this.x += d * vx
+        this.y += d * vy
+        this.blinkColdtime = 5
+        this.moveLength = 0 // 闪现完停下
     }
 
     getDist(x1, y1, x2, y2) {
@@ -113,14 +181,31 @@ class Player extends PyGameObject {
         this.speed *= 0.8
     }
 
+    receiveAttack(x, y, angle, damage, ball_uuid, attacker) {
+        attacker.destroyFireball(ball_uuid)
+        this.x = x
+        this.y = y
+        this.isAttacked(angle, damage)
+    }
+
     update() {
+        this.spendTime += this.timedelta / 1000
+        if (this.character === 'me' && this.playground.state === 'fighting')
+            this.updateColdtime()
         this.updateMove()
         this.render()
     }
 
+    updateColdtime() {
+        this.fireballColdtime -= this.timedelta / 1000
+        this.fireballColdtime = Math.max(this.fireballColdtime, 0)
+
+        this.blinkColdtime -= this.timedelta / 1000
+        this.blinkColdtime = Math.max(this.blinkColdtime, 0)
+    }
+
     updateMove() {
-        this.spendTime += this.timedelta
-        if (this.character === "robot" && this.spendTime > 5000 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
+        if (this.character === "robot" && this.spendTime > 4 && Math.random() < 1 / 180.0) { // 平均每3s发射一枚炮弹
             let player = null
             for (let i = 0; i < 1000; i++) {
                 player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)]
@@ -176,9 +261,54 @@ class Player extends PyGameObject {
             this.ctx.fillStyle = this.color
             this.ctx.fill()
         }
+
+        if (this.character === 'me' && this.playground.state === 'fighting') {
+            this.renderSkillColdtime()
+        }
+    }
+
+    renderSkillColdtime() {
+        let scale = this.playground.scale
+        let x = 1.5, y = 0.9, r = 0.04
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.fireBallImg, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
+        this.ctx.restore();
+
+        if (this.fireballColdtime > this.eps) {
+            this.ctx.beginPath()
+            this.ctx.moveTo(x * scale, y * scale)
+            this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2, Math.PI * 2 * (1 - this.fireballColdtime / 3) - Math.PI / 2, true)
+            this.ctx.lineTo(x * scale, y * scale)
+            this.ctx.fillStyle = "rgba(0,0,255,0.5)"
+            this.ctx.fill()
+        }
+
+        x = 1.62
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(x * scale, y * scale, r * scale, 0, Math.PI * 2, false);
+        this.ctx.stroke();
+        this.ctx.clip();
+        this.ctx.drawImage(this.blinkImg, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
+        this.ctx.restore();
+
+        if (this.blinkColdtime > this.eps) {
+            this.ctx.beginPath()
+            this.ctx.moveTo(x * scale, y * scale)
+            this.ctx.arc(x * scale, y * scale, r * scale, 0 - Math.PI / 2, Math.PI * 2 * (1 - this.blinkColdtime / 5) - Math.PI / 2, true)
+            this.ctx.lineTo(x * scale, y * scale)
+            this.ctx.fillStyle = "rgba(0,0,255,0.5)"
+            this.ctx.fill()
+        }
     }
 
     beforeDestroy() {
+        if (this.character === 'me')
+            this.playground.state = 'over'
         for (let i = 0; i < this.playground.players.length; i++) {
             if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1)

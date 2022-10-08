@@ -124,7 +124,6 @@ class Settings {
                 password: password
             },
             success(resp) {
-                console.log(resp)
                 if (resp.result === 'success') {
                     location.reload()
                 } else {
@@ -149,7 +148,6 @@ class Settings {
                 password_confirm: password_confirm
             },
             success(resp) {
-                console.log(resp)
                 if (resp.result === 'success') {
                     location.reload()
                 } else {
@@ -177,7 +175,6 @@ class Settings {
             url: "http://moba.chenshone.top/settings/getinfo",
             type: "GET",
             success: function (resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     outer.username = resp.username
                     outer.photo = resp.photo
