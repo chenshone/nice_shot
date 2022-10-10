@@ -1,8 +1,14 @@
 import json
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.conf import settings
 from django.core.cache import cache
+from thrift.protocol import TBinaryProtocol
+from thrift.transport import TSocket
+from thrift.transport import TTransport
+
+from game.models.player.player import Player
+from match_system.src.match_server.match_service import Match
 
 
 class MultiPlayer(AsyncWebsocketConsumer):
@@ -11,7 +17,8 @@ class MultiPlayer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         print('disconnect')
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        if self.room_name:
+            await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -26,45 +33,35 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.attcak(data)
         elif event == 'blink':
             await self.blink(data)
+        elif event == 'message':
+            await self.message(data)
 
     async def createPlayer(self, data):
         self.room_name = None
+        self.uuid = data['uuid']
+        # Make socket
+        transport = TSocket.TSocket('localhost', 9090)
 
-        for i in range(1000):  # 最多可以开1000个房间
-            name = f'room-{i}'
-            if not cache.has_key(name) or len(cache.get(name)) < settings.ROOM_CAPACITY:
-                self.room_name = name
-                break
-        if not self.room_name:
-            return
+        # Buffering is critical. Raw sockets are very slow
+        transport = TTransport.TBufferedTransport(transport)
 
-        if not cache.has_key(self.room_name):
-            cache.set(self.room_name, [], 3600)  # 有效期1小时
+        # Wrap in a protocol
+        protocol = TBinaryProtocol.TBinaryProtocol(transport)
 
-        for player in cache.get(self.room_name):
-            await self.send(text_data=json.dumps({
-                'event': 'create_player',
-                'uuid': player['uuid'],
-                'username': player['username'],
-                'photo': player['photo']
-            }))
+        # Create a client to use the protocol encoder
+        client = Match.Client(protocol)
 
-        await self.channel_layer.group_add(self.room_name, self.channel_name)
+        def db_get_player():
+            return Player.objects.get(user__username=data['username'])
 
-        players = cache.get(self.room_name)
-        players.append({
-            'uuid': data['uuid'],
-            'username': data['username'],
-            'photo': data['photo']
-        })
-        cache.set(self.room_name, players, 3600)  # 有效期1小时
-        await self.channel_layer.group_send(self.room_name, {
-            'type': 'group_send_event',
-            'event': 'create_player',
-            'uuid': data['uuid'],
-            'username': data['username'],
-            'photo': data['photo']
-        })
+        player = await database_sync_to_async(db_get_player)()
+        # Connect!
+        transport.open()
+
+        client.addPlayer(player.score, data['uuid'], data['username'], data['photo'], self.channel_name)
+
+        # Close!
+        transport.close()
 
     async def moveTo(self, data):
         await self.channel_layer.group_send(self.room_name, {
@@ -107,5 +104,18 @@ class MultiPlayer(AsyncWebsocketConsumer):
             'ty': data['ty']
         })
 
+    async def message(self, data):
+        await self.channel_layer.group_send(self.room_name, {
+            'type': 'group_send_event',
+            'event': 'message',
+            'uuid': data['uuid'],
+            'username': data['username'],
+            'text': data['text']
+        })
+
     async def group_send_event(self, data):
+        if not self.room_name:
+            keys = cache.keys(f'*{self.uuid}*')
+            if keys:
+                self.room_name = keys[0]
         await self.send(text_data=json.dumps(data))

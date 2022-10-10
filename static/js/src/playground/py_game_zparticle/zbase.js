@@ -12,7 +12,7 @@ class Particle extends PyGameObject {
         this.color = color
         this.friction = 0.95
         this.moveLength = moveLength
-        this.eps = 1
+        this.eps = 0.01
     }
 
     start() {
@@ -32,8 +32,9 @@ class Particle extends PyGameObject {
     }
 
     render() {
+        let scale = this.playground.scale
         this.ctx.beginPath()
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false)
         this.ctx.fillStyle = this.color
         this.ctx.fill()
     }

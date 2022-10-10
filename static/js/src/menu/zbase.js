@@ -18,6 +18,8 @@ class PyGameMenu {
             </div>
         </div>
         `)
+        this.$menu.hide()
+
         this.root.$py_game.append(this.$menu)
 
         this.$single_mode = this.$menu.find('.py_game_menu_filed_item_single_mode')
@@ -34,13 +36,14 @@ class PyGameMenu {
         let outer = this
         this.$single_mode.click(function () {
             outer.hide()
-            outer.root.playground.show()
+            outer.root.playground.show("single mode")
         })
         this.$multi_mode.click(function () {
-            console.log("click multi mode")
+            outer.hide()
+            outer.root.playground.show("multi mode")
         })
         this.$settings.click(function () {
-            console.log("click settings")
+            outer.root.settings.logoutOnRemote()
         })
     }
 

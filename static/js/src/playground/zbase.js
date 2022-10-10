@@ -1,24 +1,13 @@
 class PyGamePlayground {
     constructor(root) {
         this.root = root
+        this.mps = null
         this.$playground = $(`
         <div class="py_game_playground">
         </div>
         `)
-        // this.hide()
         this.root.$py_game.append(this.$playground)
-
-        this.width = this.$playground.width()
-        this.height = this.$playground.height()
-
-        this.gameMap = new GameMap(this)
-        this.players = []
-        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.2, true))
-
-        for (let i = 0; i < 5; i++) {
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.getRandomColor(), this.height * 0.2, false))
-
-        }
+        this.hide()
 
         this.start()
     }
@@ -29,11 +18,50 @@ class PyGamePlayground {
     }
 
     start() {
+        let outer = this
+        $(window).resize(function () {
+            outer.resize()
+        })
+    }
+
+    // 长宽比 16:9
+    resize() {
+        this.width = this.$playground.width()
+        this.height = this.$playground.height()
+        let unit = Math.min(this.width / 16, this.height / 9)
+        this.width = unit * 16
+        this.height = unit * 9
+        this.scale = this.height  // 基准
+
+        if (this.gameMap) this.gameMap.resize()
     }
 
 
-    show() {
+    show(mode) {
+        let outer = this
         this.$playground.show()
+        this.mode = mode;
+        this.state = 'waiting' // waiting fighting over
+        this.resize()
+        this.gameMap = new GameMap(this)
+        this.noticeBoard = new NoticeBoard(this)
+        this.playerCount = 0
+        this.players = []
+        this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, "white", this.height * 0.2 / this.scale, "me", this.root.settings.username, this.root.settings.photo))
+
+        if (mode === "single mode") {
+            for (let i = 0; i < 5; i++) {
+                this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, this.getRandomColor(), this.height * 0.2 / this.scale, "robot"))
+            }
+        } else if (mode === "multi mode") {
+            this.chatField = new ChatField(this)
+            this.mps = new MultiPlayerSocket(this)
+            this.mps.uuid = this.players[0].uuid // 每个玩家的ws的uuid等于玩家的uuid，这样可以指明当前的ws是谁
+            this.mps.ws.onopen = function () {
+                outer.mps.sendCreatePlayer(outer.root.settings.username, outer.root.settings.photo)
+            }
+        }
+
     }
 
     hide() {

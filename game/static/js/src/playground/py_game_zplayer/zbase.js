@@ -87,9 +87,21 @@ class Player extends PyGameObject {
             }
         })
 
-        $(window).keydown(function (e) {
-            if (outer.playground.state !== 'fighting') return true
+        this.playground.gameMap.$canvas.keydown(function (e) {
+            if (e.which === 13) { // 回车
+                if (outer.playground.mode === 'multi mode') { // 打开聊天框
+                    outer.playground.chatField.showInput()
+                    return false
+                }
+            } else if (e.which === 27) { // esc
+                if (outer.playground.mode === 'multi mode') { // 关闭聊天框
+                    outer.playground.chatField.hideInput()
+                    return false
+                }
+            }
 
+
+            if (outer.playground.state !== 'fighting') return true
 
             if (e.which === 81) { // q键
                 if (outer.fireballColdtime > outer.eps) return false

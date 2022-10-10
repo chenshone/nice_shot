@@ -54,6 +54,7 @@ class PyGamePlayground {
                 this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, this.getRandomColor(), this.height * 0.2 / this.scale, "robot"))
             }
         } else if (mode === "multi mode") {
+            this.chatField = new ChatField(this)
             this.mps = new MultiPlayerSocket(this)
             this.mps.uuid = this.players[0].uuid // 每个玩家的ws的uuid等于玩家的uuid，这样可以指明当前的ws是谁
             this.mps.ws.onopen = function () {
