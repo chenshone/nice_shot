@@ -30,7 +30,7 @@ class Player extends PyGameObject {
         }
 
         if (character === 'me') {
-            this.fireballColdtime = 0.1 // 冷却时间 秒
+            this.fireballColdtime = 2 // 冷却时间 秒
             this.fireBallImg = new Image()
             this.fireBallImg.src = 'https://cdn.jsdelivr.net/gh/chenshone/myPictureHost@main/learning-notes/20221008141348.png'
 
@@ -128,7 +128,7 @@ class Player extends PyGameObject {
         let fireball = new FireBall(this.playground, this, x, y, radius, vx, vy, speed, color, moveLength, damage)
         this.fireballs.push(fireball)
 
-        this.fireballColdtime = 0.1
+        this.fireballColdtime = 2
         return fireball
     }
 

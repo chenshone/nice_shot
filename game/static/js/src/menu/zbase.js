@@ -13,7 +13,7 @@ class PyGameMenu {
                 </div>
                 <br>
                 <div class="py_game_menu_filed_item py_game_menu_filed_item_settings">
-                设置
+                退出
                 </div>
             </div>
         </div>
