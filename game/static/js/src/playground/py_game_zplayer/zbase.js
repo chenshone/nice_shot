@@ -30,7 +30,7 @@ class Player extends PyGameObject {
         }
 
         if (character === 'me') {
-            this.fireballColdtime = 3 // 冷却时间 秒
+            this.fireballColdtime = 0.1 // 冷却时间 秒
             this.fireBallImg = new Image()
             this.fireBallImg.src = 'https://cdn.jsdelivr.net/gh/chenshone/myPictureHost@main/learning-notes/20221008141348.png'
 
@@ -128,7 +128,7 @@ class Player extends PyGameObject {
         let fireball = new FireBall(this.playground, this, x, y, radius, vx, vy, speed, color, moveLength, damage)
         this.fireballs.push(fireball)
 
-        this.fireballColdtime = 3
+        this.fireballColdtime = 0.1
         return fireball
     }
 
@@ -202,10 +202,19 @@ class Player extends PyGameObject {
 
     update() {
         this.spendTime += this.timedelta / 1000
+
+        this.updateWin()
         if (this.character === 'me' && this.playground.state === 'fighting')
             this.updateColdtime()
         this.updateMove()
         this.render()
+    }
+
+    updateWin() {
+        if (this.playground.state === 'fighting' && this.character === 'me' && this.playground.players.length === 1) {
+            this.playground.state = 'over'
+            this.playground.scoreBoard.win()
+        }
     }
 
     updateColdtime() {
@@ -319,8 +328,11 @@ class Player extends PyGameObject {
     }
 
     beforeDestroy() {
-        if (this.character === 'me')
+        if (this.playground.state === 'fighting' && this.character === 'me') {
             this.playground.state = 'over'
+            this.playground.scoreBoard.lose()
+
+        }
         for (let i = 0; i < this.playground.players.length; i++) {
             if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1)

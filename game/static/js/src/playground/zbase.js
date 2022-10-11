@@ -45,6 +45,7 @@ class PyGamePlayground {
         this.resize()
         this.gameMap = new GameMap(this)
         this.noticeBoard = new NoticeBoard(this)
+        this.scoreBoard = new ScoreBoard(this)
         this.playerCount = 0
         this.players = []
         this.players.push(new Player(this, this.width / 2 / this.scale, this.height / 2 / this.scale, this.height * 0.05 / this.scale, "white", this.height * 0.2 / this.scale, "me", this.root.settings.username, this.root.settings.photo))
@@ -65,6 +66,23 @@ class PyGamePlayground {
     }
 
     hide() {
+        while (this.players && this.players.length > 0) {
+            this.players[0].destroy()
+        }
+        if (this.gameMap) {
+            this.gameMap.destroy()
+            this.gameMap = null
+        }
+        if (this.noticeBoard) {
+            this.noticeBoard.destroy()
+            this.noticeBoard = null
+        }
+        if (this.scoreBoard) {
+            this.scoreBoard.destroy()
+            this.scoreBoard = null
+        }
+        this.$playground.empty()
+
         this.$playground.hide()
     }
 }

@@ -23,6 +23,9 @@ class PyGameObject {
     update() { // 每一帧都执行一次
     }
 
+    lateUpdate() {
+    } // 在每一帧最后执行一次
+
     beforeDestroy() { // 在销毁前执行一次
 
     }
@@ -49,6 +52,11 @@ let py_game_animation = function (timestamp) {
             obj.timedelta = timestamp - lastTimestamp
             obj.update()
         }
+    }
+
+    for (let i = 0; i < py_game_objects.length; i++) {
+        let obj = py_game_objects[i]
+        obj.lateUpdate()
     }
     lastTimestamp = timestamp
 
