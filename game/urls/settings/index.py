@@ -1,13 +1,17 @@
 from django.urls import path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
-from game.views.settings.getinfo import getinfo
-from game.views.settings.login import signin
-from game.views.settings.logout import signout
-from game.views.settings.register import register
+from game.views.settings.getinfo import InfoView
+from game.views.settings.rank_list import RankListView
+from game.views.settings.register import RegisterView
 
 urlpatterns = [
-    path("getinfo/", getinfo, name="settings_getinfo"),
-    path("login/", signin, name="settings_login"),
-    path("logout/", signout, name="settings_logout"),
-    path("register/", register, name="settings_register")
+    path('token/', TokenObtainPairView.as_view(), name='settings_token'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='settings_token_refresh'),
+    path("getinfo/", InfoView.as_view(), name="settings_getinfo"),
+    path('ranklist/', RankListView.as_view(), name="settings_ranklist"),
+    path("register/", RegisterView.as_view(), name="settings_register")
 ]

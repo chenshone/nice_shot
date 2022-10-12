@@ -82,8 +82,28 @@ class Settings {
     }
 
     start() {
-        this.getinfo()
+        if (this.root.access) {
+            this.getinfo()
+            this.refresh_jwt_token()
+        } else {
+            this.login()
+        }
         this.addListeningEvents()
+    }
+
+    refresh_jwt_token() {
+        setInterval(() => {
+            $.ajax({
+                url: "http://moba.chenshone.top/settings/token/refresh/",
+                type: "post",
+                data: {
+                    'refresh': this.root.refresh
+                },
+                success: (resp) => {
+                    this.root.access = resp.access
+                }
+            })
+        }, 4.5 * 60 * 1000)
     }
 
     addListeningEvents() {
@@ -111,24 +131,26 @@ class Settings {
         })
     }
 
-    loginOnRemote() {
+    loginOnRemote(username, password) {
         let outer = this
-        let username = this.$login_username.val()
-        let password = this.$login_password.val()
+        username = username || this.$login_username.val()
+        password = password || this.$login_password.val()
         this.$login_error_message.empty()
         $.ajax({
-            url: "http://moba.chenshone.top/settings/login/",
-            type: "GET",
+            url: "http://moba.chenshone.top/settings/token/",
+            type: "post",
             data: {
                 username: username,
                 password: password
             },
             success(resp) {
-                if (resp.result === 'success') {
-                    location.reload()
-                } else {
-                    outer.$login_error_message.html(resp.result)
-                }
+                outer.root.access = resp.access
+                outer.root.refresh = resp.refresh
+                outer.getinfo()
+                outer.refresh_jwt_token()
+            },
+            error: resp => {
+                this.$login_error_message.html("用户名或密码错误")
             }
         })
     }
@@ -141,7 +163,7 @@ class Settings {
         this.$register_error_message.empty()
         $.ajax({
             url: "http://moba.chenshone.top/settings/register/",
-            type: "GET",
+            type: "post",
             data: {
                 username: username,
                 password: password,
@@ -149,7 +171,7 @@ class Settings {
             },
             success(resp) {
                 if (resp.result === 'success') {
-                    location.reload()
+                    outer.loginOnRemote(username, password)
                 } else {
                     outer.$register_error_message.html(resp.result)
                 }
@@ -158,15 +180,9 @@ class Settings {
     }
 
     logoutOnRemote() {
-        $.ajax({
-            url: "http://moba.chenshone.top/settings/logout/",
-            type: "GET",
-            success(resp) {
-                if (resp.result === 'success') {
-                    location.reload()
-                }
-            }
-        })
+        this.root.access = ""
+        this.root.refresh = ""
+        location.href = "/"
     }
 
     getinfo() {
@@ -174,6 +190,9 @@ class Settings {
         $.ajax({
             url: "http://moba.chenshone.top/settings/getinfo",
             type: "GET",
+            headers: {
+                'Authorization': 'Bearer ' + this.root.access
+            },
             success: function (resp) {
                 if (resp.result === "success") {
                     outer.username = resp.username

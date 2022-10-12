@@ -1,7 +1,7 @@
 class MultiPlayerSocket {
     constructor(playground) {
         this.playground = playground
-        this.ws = new WebSocket("ws://moba.chenshone.top/wss/multiplayer/")
+        this.ws = new WebSocket("ws://moba.chenshone.top/wss/multiplayer/?token=" + playground.root.access)
         this.uuid = null
         this.start()
     }

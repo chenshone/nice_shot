@@ -82,7 +82,13 @@ class Settings {
     }
 
     start() {
-        this.getinfo()
+        if (this.root.access) {
+            console.log(111)
+            this.getinfo()
+        } else {
+            console.log(222)
+            this.login()
+        }
         this.addListeningEvents()
     }
 
@@ -112,23 +118,23 @@ class Settings {
     }
 
     loginOnRemote() {
-        let outer = this
         let username = this.$login_username.val()
         let password = this.$login_password.val()
         this.$login_error_message.empty()
         $.ajax({
-            url: "http://moba.chenshone.top/settings/login/",
-            type: "GET",
+            url: "http://moba.chenshone.top/settings/token/",
+            type: "post",
             data: {
                 username: username,
                 password: password
             },
-            success(resp) {
-                if (resp.result === 'success') {
-                    location.reload()
-                } else {
-                    outer.$login_error_message.html(resp.result)
-                }
+            success: resp => {
+                this.root.access = resp.access
+                this.root.refresh = resp.refresh
+                this.getinfo()
+            },
+            error: resp => {
+                this.$login_error_message.html("用户名或密码错误")
             }
         })
     }
@@ -174,6 +180,9 @@ class Settings {
         $.ajax({
             url: "http://moba.chenshone.top/settings/getinfo",
             type: "GET",
+            headers: {
+                'Authorization': 'Bearer ' + this.root.access
+            },
             success: function (resp) {
                 if (resp.result === "success") {
                     outer.username = resp.username
